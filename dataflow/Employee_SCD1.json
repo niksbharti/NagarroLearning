@@ -1,0 +1,32 @@
+{
+	"name": "Employee_SCD1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Input_Employee",
+						"type": "DatasetReference"
+					},
+					"name": "InputEmployee"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "tbl_employee",
+						"type": "DatasetReference"
+					},
+					"name": "tblemployee"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AlterEmployee"
+				}
+			],
+			"script": "source(output(\n\t\t{Emp ID} as integer,\n\t\t{Name Prefix} as string,\n\t\t{First Name} as string,\n\t\t{Middle Initial} as string,\n\t\t{Last Name} as string,\n\t\tGender as string,\n\t\t{E Mail} as string,\n\t\tdepartment_id as short\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tpartitionBy('hash', 1)) ~> InputEmployee\nInputEmployee alterRow(upsertIf(1==1),\n\tpartitionBy('hash', 1)) ~> AlterEmployee\nAlterEmployee sink(input(\n\t\tcol_Emp_ID as integer,\n\t\tcol_Name_Prefix as string,\n\t\tcol_First_Name as string,\n\t\tcol_Middle_Initial as string,\n\t\tcol_Last_Name as string,\n\t\tcol_Gender as string,\n\t\tcol_E_Mail as string,\n\t\tcol_department_id as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['col_Emp_ID'],\n\tformat: 'table',\n\tmapColumn(\n\t\tcol_Emp_ID = {Emp ID},\n\t\tcol_Name_Prefix = {Name Prefix},\n\t\tcol_First_Name = {First Name},\n\t\tcol_Middle_Initial = {Middle Initial},\n\t\tcol_Last_Name = {Last Name},\n\t\tcol_Gender = Gender,\n\t\tcol_E_Mail = {E Mail},\n\t\tcol_department_id = department_id\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> tblemployee"
+		}
+	}
+}

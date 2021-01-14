@@ -1,0 +1,68 @@
+{
+	"name": "EmployeeDetailsSCD2",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "tbl_employee_Details",
+						"type": "DatasetReference"
+					},
+					"name": "EmployeeDetails"
+				},
+				{
+					"dataset": {
+						"referenceName": "tbl_employee_Details",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "Input_Employee",
+						"type": "DatasetReference"
+					},
+					"name": "EmployeeDetailsFile"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "tbl_employee_Details",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "tbl_employee_Details",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				}
+			],
+			"transformations": [
+				{
+					"name": "Select1"
+				},
+				{
+					"name": "Join1"
+				},
+				{
+					"name": "Lookup1"
+				},
+				{
+					"name": "ConditionalSplit1"
+				},
+				{
+					"name": "DerivedColumn1"
+				},
+				{
+					"name": "DerivedColumn2"
+				}
+			],
+			"script": "source(output(\n\t\tcol_emp_sk as integer,\n\t\tcol_Emp_ID as integer,\n\t\tcol_Name_Prefix as string,\n\t\tcol_First_Name as string,\n\t\tcol_Middle_Initial as string,\n\t\tcol_Last_Name as string,\n\t\tcol_Gender as string,\n\t\tcol_EMail as string,\n\t\tcol_department_id as integer,\n\t\tcol_Start_Date as timestamp,\n\t\tcol_End_Date as timestamp,\n\t\tcol_curr_flg as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tpartitionBy('hash', 1)) ~> EmployeeDetails\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tquery: 'select max(col_emp_sk) as emp_sk\\nfrom [dbo].[tbl_employee_details]',\n\tformat: 'query',\n\tpartitionBy('hash', 1)) ~> source1\nsource(output(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string,\n\t\tColumn_3 as string,\n\t\tColumn_4 as string,\n\t\tColumn_5 as string,\n\t\tColumn_6 as string,\n\t\tColumn_7 as string,\n\t\tColumn_8 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tpartitionBy('hash', 1)) ~> EmployeeDetailsFile\nEmployeeDetails select(mapColumn(\n\t\tcol_emp_sk,\n\t\tcol_Emp_ID,\n\t\tcol_Name_Prefix,\n\t\tcol_First_Name,\n\t\tcol_Middle_Initial,\n\t\tcol_Last_Name,\n\t\tcol_Gender,\n\t\tcol_EMail,\n\t\tcol_department_id,\n\t\tcol_Start_Date,\n\t\tcol_End_Date,\n\t\tcol_curr_flg\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nEmployeeDetailsFile, source1 join(1 == 1,\n\tjoinType:'cross',\n\tpartitionBy('hash', 1),\n\tbroadcast: 'auto')~> Join1\nJoin1, Select1 lookup(Column_1 == col_EMail,\n\tmultiple: false,\n\tpickup: 'first',\n\tasc(col_Emp_ID, true),\n\tpartitionBy('hash', 1),\n\tbroadcast: 'auto')~> Lookup1\nLookup1 split(isNull(Column_1),\n\tdisjoint: false,\n\tpartitionBy('hash', 1)) ~> ConditionalSplit1@(New, Exist)\nConditionalSplit1@New derive(Active_Flg = 1,\n\tpartitionBy('hash', 1)) ~> DerivedColumn1\nConditionalSplit1@Exist derive(Output = 1,\n\t\tOutput2 = 1,\n\tpartitionBy('hash', 1)) ~> DerivedColumn2\nDerivedColumn1 sink(input(\n\t\tcol_emp_sk as integer,\n\t\tcol_Emp_ID as integer,\n\t\tcol_Name_Prefix as string,\n\t\tcol_First_Name as string,\n\t\tcol_Middle_Initial as string,\n\t\tcol_Last_Name as string,\n\t\tcol_Gender as string,\n\t\tcol_EMail as string,\n\t\tcol_department_id as integer,\n\t\tcol_Start_Date as timestamp,\n\t\tcol_End_Date as timestamp,\n\t\tcol_curr_flg as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> sink1\nDerivedColumn2 sink(input(\n\t\tcol_emp_sk as integer,\n\t\tcol_Emp_ID as integer,\n\t\tcol_Name_Prefix as string,\n\t\tcol_First_Name as string,\n\t\tcol_Middle_Initial as string,\n\t\tcol_Last_Name as string,\n\t\tcol_Gender as string,\n\t\tcol_EMail as string,\n\t\tcol_department_id as integer,\n\t\tcol_Start_Date as timestamp,\n\t\tcol_End_Date as timestamp,\n\t\tcol_curr_flg as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> sink2"
+		}
+	}
+}

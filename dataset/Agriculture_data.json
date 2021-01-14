@@ -1,0 +1,46 @@
+{
+	"name": "Agriculture_data",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Output_SQL_Server",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "col_year",
+				"type": "varchar"
+			},
+			{
+				"name": "col_industry_code_ANZSIC",
+				"type": "varchar"
+			},
+			{
+				"name": "col_industry_name_ANZSIC",
+				"type": "varchar"
+			},
+			{
+				"name": "col_rme_size_grp",
+				"type": "varchar"
+			},
+			{
+				"name": "col_variable",
+				"type": "varchar"
+			},
+			{
+				"name": "col_value",
+				"type": "varchar"
+			},
+			{
+				"name": "col_unit",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Agriculture_data"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,52 @@
+{
+	"name": "tbl_employee",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Output_SQL_Server",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "col_Emp_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "col_Name_Prefix",
+				"type": "varchar"
+			},
+			{
+				"name": "col_First_Name",
+				"type": "varchar"
+			},
+			{
+				"name": "col_Middle_Initial",
+				"type": "varchar"
+			},
+			{
+				"name": "col_Last_Name",
+				"type": "varchar"
+			},
+			{
+				"name": "col_Gender",
+				"type": "varchar"
+			},
+			{
+				"name": "col_E_Mail",
+				"type": "varchar"
+			},
+			{
+				"name": "col_department_id",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "tbl_employee"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
