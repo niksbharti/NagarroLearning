@@ -1,0 +1,712 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "BlobToSQLLearning"
+		},
+		"AzureBlobStorage_nagarroleanring_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage_nagarroleanring'"
+		},
+		"Output_SQL_Server_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'Output_SQL_Server'"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/Blobcsv_to_SQL')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy_Blobcsv_SQL",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink"
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "year",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "col_year",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "industry_code_ANZSIC",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "col_industry_code_ANZSIC",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "industry_name_ANZSIC",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "col_industry_name_ANZSIC",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "rme_size_grp",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "col_rme_size_grp",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "variable",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "col_variable",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "value",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "col_value",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "unit",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "col_unit",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "Agriculture",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "Agriculture_data",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-01-07T13:14:59Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Agriculture')]",
+				"[concat(variables('factoryId'), '/datasets/Agriculture_data')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/EmployeeDetailsScd2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "EmployeeDetailsSCD2",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "EmployeeDetailsSCD2",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"EmployeeDetails": {},
+									"source1": {},
+									"EmployeeDetailsFile": {},
+									"sink1": {},
+									"sink2": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-01-11T19:01:56Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/EmployeeDetailsSCD2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/EmployeeSCD1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Employee_SCD1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Employee_SCD1",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"InputEmployee": {},
+									"tblemployee": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"annotations": [],
+				"lastPublishTime": "2021-01-07T15:57:22Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Employee_SCD1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Agriculture')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage_nagarroleanring",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Sample_Data.csv",
+						"container": "nagarrolearning"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage_nagarroleanring')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Agriculture_data')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Output_SQL_Server",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "col_year",
+						"type": "varchar"
+					},
+					{
+						"name": "col_industry_code_ANZSIC",
+						"type": "varchar"
+					},
+					{
+						"name": "col_industry_name_ANZSIC",
+						"type": "varchar"
+					},
+					{
+						"name": "col_rme_size_grp",
+						"type": "varchar"
+					},
+					{
+						"name": "col_variable",
+						"type": "varchar"
+					},
+					{
+						"name": "col_value",
+						"type": "varchar"
+					},
+					{
+						"name": "col_unit",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Agriculture_data"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Output_SQL_Server')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Input_Employee')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage_nagarroleanring",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Employee.csv",
+						"container": "nagarrolearning"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage_nagarroleanring')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tbl_employee')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Output_SQL_Server",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "col_Emp_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "col_Name_Prefix",
+						"type": "varchar"
+					},
+					{
+						"name": "col_First_Name",
+						"type": "varchar"
+					},
+					{
+						"name": "col_Middle_Initial",
+						"type": "varchar"
+					},
+					{
+						"name": "col_Last_Name",
+						"type": "varchar"
+					},
+					{
+						"name": "col_Gender",
+						"type": "varchar"
+					},
+					{
+						"name": "col_E_Mail",
+						"type": "varchar"
+					},
+					{
+						"name": "col_department_id",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "tbl_employee"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Output_SQL_Server')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tbl_employee_Details')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Output_SQL_Server",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "col_emp_sk",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "col_Emp_ID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "col_Name_Prefix",
+						"type": "varchar"
+					},
+					{
+						"name": "col_First_Name",
+						"type": "varchar"
+					},
+					{
+						"name": "col_Middle_Initial",
+						"type": "varchar"
+					},
+					{
+						"name": "col_Last_Name",
+						"type": "varchar"
+					},
+					{
+						"name": "col_Gender",
+						"type": "varchar"
+					},
+					{
+						"name": "col_EMail",
+						"type": "varchar"
+					},
+					{
+						"name": "col_department_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "col_Start_Date",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "col_End_Date",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "col_curr_flg",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "tbl_employee_details"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Output_SQL_Server')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage_nagarroleanring')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorage_nagarroleanring_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Output_SQL_Server')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('Output_SQL_Server_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/EmployeeDetailsSCD2')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "tbl_employee_Details",
+								"type": "DatasetReference"
+							},
+							"name": "EmployeeDetails"
+						},
+						{
+							"dataset": {
+								"referenceName": "tbl_employee_Details",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						},
+						{
+							"dataset": {
+								"referenceName": "Input_Employee",
+								"type": "DatasetReference"
+							},
+							"name": "EmployeeDetailsFile"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "tbl_employee_Details",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						},
+						{
+							"dataset": {
+								"referenceName": "tbl_employee_Details",
+								"type": "DatasetReference"
+							},
+							"name": "sink2"
+						}
+					],
+					"transformations": [
+						{
+							"name": "Select1"
+						},
+						{
+							"name": "Join1"
+						},
+						{
+							"name": "Lookup1"
+						},
+						{
+							"name": "ConditionalSplit1"
+						},
+						{
+							"name": "DerivedColumn1"
+						},
+						{
+							"name": "DerivedColumn2"
+						}
+					],
+					"script": "source(output(\n\t\tcol_emp_sk as integer,\n\t\tcol_Emp_ID as integer,\n\t\tcol_Name_Prefix as string,\n\t\tcol_First_Name as string,\n\t\tcol_Middle_Initial as string,\n\t\tcol_Last_Name as string,\n\t\tcol_Gender as string,\n\t\tcol_EMail as string,\n\t\tcol_department_id as integer,\n\t\tcol_Start_Date as timestamp,\n\t\tcol_End_Date as timestamp,\n\t\tcol_curr_flg as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tformat: 'table',\n\tpartitionBy('hash', 1)) ~> EmployeeDetails\nsource(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tisolationLevel: 'READ_UNCOMMITTED',\n\tquery: 'select max(col_emp_sk) as emp_sk\\nfrom [dbo].[tbl_employee_details]',\n\tformat: 'query',\n\tpartitionBy('hash', 1)) ~> source1\nsource(output(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string,\n\t\tColumn_3 as string,\n\t\tColumn_4 as string,\n\t\tColumn_5 as string,\n\t\tColumn_6 as string,\n\t\tColumn_7 as string,\n\t\tColumn_8 as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tpartitionBy('hash', 1)) ~> EmployeeDetailsFile\nEmployeeDetails select(mapColumn(\n\t\tcol_emp_sk,\n\t\tcol_Emp_ID,\n\t\tcol_Name_Prefix,\n\t\tcol_First_Name,\n\t\tcol_Middle_Initial,\n\t\tcol_Last_Name,\n\t\tcol_Gender,\n\t\tcol_EMail,\n\t\tcol_department_id,\n\t\tcol_Start_Date,\n\t\tcol_End_Date,\n\t\tcol_curr_flg\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> Select1\nEmployeeDetailsFile, source1 join(1 == 1,\n\tjoinType:'cross',\n\tpartitionBy('hash', 1),\n\tbroadcast: 'auto')~> Join1\nJoin1, Select1 lookup(Column_1 == col_EMail,\n\tmultiple: false,\n\tpickup: 'first',\n\tasc(col_Emp_ID, true),\n\tpartitionBy('hash', 1),\n\tbroadcast: 'auto')~> Lookup1\nLookup1 split(isNull(Column_1),\n\tdisjoint: false,\n\tpartitionBy('hash', 1)) ~> ConditionalSplit1@(New, Exist)\nConditionalSplit1@New derive(Active_Flg = 1,\n\tpartitionBy('hash', 1)) ~> DerivedColumn1\nConditionalSplit1@Exist derive(Output = 1,\n\t\tOutput2 = 1,\n\tpartitionBy('hash', 1)) ~> DerivedColumn2\nDerivedColumn1 sink(input(\n\t\tcol_emp_sk as integer,\n\t\tcol_Emp_ID as integer,\n\t\tcol_Name_Prefix as string,\n\t\tcol_First_Name as string,\n\t\tcol_Middle_Initial as string,\n\t\tcol_Last_Name as string,\n\t\tcol_Gender as string,\n\t\tcol_EMail as string,\n\t\tcol_department_id as integer,\n\t\tcol_Start_Date as timestamp,\n\t\tcol_End_Date as timestamp,\n\t\tcol_curr_flg as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> sink1\nDerivedColumn2 sink(input(\n\t\tcol_emp_sk as integer,\n\t\tcol_Emp_ID as integer,\n\t\tcol_Name_Prefix as string,\n\t\tcol_First_Name as string,\n\t\tcol_Middle_Initial as string,\n\t\tcol_Last_Name as string,\n\t\tcol_Gender as string,\n\t\tcol_EMail as string,\n\t\tcol_department_id as integer,\n\t\tcol_Start_Date as timestamp,\n\t\tcol_End_Date as timestamp,\n\t\tcol_curr_flg as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:true,\n\tupdateable:false,\n\tupsertable:false,\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> sink2"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/tbl_employee_Details')]",
+				"[concat(variables('factoryId'), '/datasets/Input_Employee')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Employee_SCD1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Input_Employee",
+								"type": "DatasetReference"
+							},
+							"name": "InputEmployee"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "tbl_employee",
+								"type": "DatasetReference"
+							},
+							"name": "tblemployee"
+						}
+					],
+					"transformations": [
+						{
+							"name": "AlterEmployee"
+						}
+					],
+					"script": "source(output(\n\t\t{Emp ID} as integer,\n\t\t{Name Prefix} as string,\n\t\t{First Name} as string,\n\t\t{Middle Initial} as string,\n\t\t{Last Name} as string,\n\t\tGender as string,\n\t\t{E Mail} as string,\n\t\tdepartment_id as short\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tpartitionBy('hash', 1)) ~> InputEmployee\nInputEmployee alterRow(upsertIf(1==1),\n\tpartitionBy('hash', 1)) ~> AlterEmployee\nAlterEmployee sink(input(\n\t\tcol_Emp_ID as integer,\n\t\tcol_Name_Prefix as string,\n\t\tcol_First_Name as string,\n\t\tcol_Middle_Initial as string,\n\t\tcol_Last_Name as string,\n\t\tcol_Gender as string,\n\t\tcol_E_Mail as string,\n\t\tcol_department_id as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tdeletable:false,\n\tinsertable:false,\n\tupdateable:false,\n\tupsertable:true,\n\tkeys:['col_Emp_ID'],\n\tformat: 'table',\n\tmapColumn(\n\t\tcol_Emp_ID = {Emp ID},\n\t\tcol_Name_Prefix = {Name Prefix},\n\t\tcol_First_Name = {First Name},\n\t\tcol_Middle_Initial = {Middle Initial},\n\t\tcol_Last_Name = {Last Name},\n\t\tcol_Gender = Gender,\n\t\tcol_E_Mail = {E Mail},\n\t\tcol_department_id = department_id\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError') ~> tblemployee"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Input_Employee')]",
+				"[concat(variables('factoryId'), '/datasets/tbl_employee')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Test_Pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
+						}
+					}
+				],
+				"annotations": []
+			},
+			"dependsOn": []
+		}
+	]
+}
